@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">DECLOITRE Valentin</string>
+    <string name="title_activity_detail">DetailActivity</string>
+    <string name="List_item">List Item</string>
+</resources>
