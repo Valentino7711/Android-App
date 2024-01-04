@@ -6,12 +6,14 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.example.decloitrevalentin.R
 import com.example.decloitrevalentin.data.Api
 import com.example.decloitrevalentin.detail.DetailActivity
@@ -104,6 +106,7 @@ class TaskListFragment : Fragment() {
         lifecycleScope.launch {
             val user = Api.userWebService.fetchUser().body()!!
             view?.findViewById<TextView>(R.id.textView2)?.text = user.name
+            view?.findViewById<ImageView>(R.id.imageView)?.load("https://mag.bullebleue.fr/sites/mag/files/img/articles/chat/comment-punir-son-chat.jpg")
             //Log.i(user.name, "Message Info")
             viewModel.refresh() // on demande de rafraîchir les données sans attendre le retour directement
         }
