@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.example.decloitrevalentin.R
@@ -24,10 +25,13 @@ interface TaskListListener {
 
 class TaskListFragment : Fragment() {
 
+    private val viewModel: TasksListViewModel by viewModels()
+
     private val adapterListener : TaskListListener = object : TaskListListener {
         override fun onClickDelete(task: Task) {
-            taskList = taskList - task
-            adapter.submitList(taskList)
+            /*taskList = taskList - task
+            adapter.submitList(taskList)*/
+            viewModel.remove(task)
         }
         override fun onClickEdit(task: Task) {
             val intent = Intent(context, DetailActivity::class.java)
@@ -38,14 +42,15 @@ class TaskListFragment : Fragment() {
 
     private val adapter = TaskListAdapter(adapterListener)
 
-    private var taskList = emptyList<Task>()
+    //private var taskList = emptyList<Task>()
 
     val createTask = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         // dans cette callback on récupèrera la task et on l'ajoutera à la liste
         val task = result.data?.getSerializableExtra("task") as Task?
         if (task != null) {
-            taskList = taskList + task
-            adapter.submitList(taskList)
+            /*taskList = taskList + task
+            adapter.submitList(taskList)*/
+            viewModel.add(task)
         }
     }
 
@@ -53,15 +58,17 @@ class TaskListFragment : Fragment() {
         // dans cette callback on récupèrera la task et on l'ajoutera à la liste
         val task = result.data?.getSerializableExtra("task") as Task?
         if (task != null) {
-            taskList = taskList.map { if (it.id == task.id) task else it }
-            adapter.submitList(taskList)
+            /*taskList = taskList.map { if (it.id == task.id) task else it }
+            adapter.submitList(taskList)*/
+            viewModel.edit(task)
         }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         lifecycleScope.launch {
-            taskList = Api.taskWebService.fetchTasks().body()!!
-            adapter.submitList(taskList);
+            /*taskList = Api.taskWebService.fetchTasks().body()!!
+            adapter.submitList(taskList);*/
+            viewModel.refresh()
         }
         return inflater.inflate(R.layout.fragment_task_list, container, false)
     }
@@ -81,6 +88,14 @@ class TaskListFragment : Fragment() {
             val intent = Intent(context, DetailActivity::class.java)
             createTask.launch(intent)
         }
+        lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
+            viewModel.tasksStateFlow.collect { newList ->
+                // cette lambda est exécutée à chaque fois que la liste est mise à jour dans le VM
+                // -> ici, on met à jour la liste dans l'adapter
+                //taskList = newList
+                adapter.submitList(newList)
+            }
+        }
 
     }
 
@@ -90,6 +105,7 @@ class TaskListFragment : Fragment() {
             val user = Api.userWebService.fetchUser().body()!!
             view?.findViewById<TextView>(R.id.textView2)?.text = user.name
             //Log.i(user.name, "Message Info")
+            viewModel.refresh() // on demande de rafraîchir les données sans attendre le retour directement
         }
     }
 
