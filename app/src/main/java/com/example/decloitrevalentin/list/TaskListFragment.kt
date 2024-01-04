@@ -2,6 +2,7 @@ package com.example.decloitrevalentin.list
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -87,7 +88,8 @@ class TaskListFragment : Fragment() {
         super.onResume()
         lifecycleScope.launch {
             val user = Api.userWebService.fetchUser().body()!!
-            view?.findViewById<TextView>(R.id.textView2)?.setText(user.name)
+            view?.findViewById<TextView>(R.id.textView2)?.text = user.name
+            //Log.i(user.name, "Message Info")
         }
     }
 
