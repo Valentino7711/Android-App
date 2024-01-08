@@ -17,6 +17,7 @@ import coil.load
 import com.example.decloitrevalentin.R
 import com.example.decloitrevalentin.data.Api
 import com.example.decloitrevalentin.detail.DetailActivity
+import com.example.decloitrevalentin.user.UserActivity
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.launch
 
@@ -90,6 +91,12 @@ class TaskListFragment : Fragment() {
             val intent = Intent(context, DetailActivity::class.java)
             createTask.launch(intent)
         }
+
+        val imageProfile = view.findViewById<ImageView>(R.id.imageView)
+        imageProfile.setOnClickListener {
+            startActivity(Intent(context, UserActivity::class.java))
+        }
+
         lifecycleScope.launch { // on lance une coroutine car `collect` est `suspend`
             viewModel.tasksStateFlow.collect { newList ->
                 // cette lambda est exécutée à chaque fois que la liste est mise à jour dans le VM
@@ -106,7 +113,10 @@ class TaskListFragment : Fragment() {
         lifecycleScope.launch {
             val user = Api.userWebService.fetchUser().body()!!
             view?.findViewById<TextView>(R.id.textView2)?.text = user.name
-            view?.findViewById<ImageView>(R.id.imageView)?.load("https://mag.bullebleue.fr/sites/mag/files/img/articles/chat/comment-punir-son-chat.jpg")
+            val imageView = view?.findViewById<ImageView>(R.id.imageView)//load("https://mag.bullebleue.fr/sites/mag/files/img/articles/chat/comment-punir-son-chat.jpg")
+            imageView?.load(user.avatar) {
+                error(R.drawable.ic_launcher_background) // image par défaut en cas d'erreur
+            }
             //Log.i(user.name, "Message Info")
             viewModel.refresh() // on demande de rafraîchir les données sans attendre le retour directement
         }
